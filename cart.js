@@ -7,6 +7,9 @@ if (navigation && navigation.type === 'reload') localStorage.removeItem(cartKey)
 const itemsEl = document.querySelector('#cartItems');
 const emptyEl = document.querySelector('#emptyCart');
 const subtotalEl = document.querySelector('#subtotal');
+const deliveryChargesEl = document.querySelector('#deliveryCharges');
+const finalTotalEl = document.querySelector('#finalTotal');
+const DELIVERY_CHARGE = 150;
 const addressField = document.querySelector('.address-field');
 const locationPicker = document.createElement('div');
 locationPicker.className = 'location-picker address-field';
@@ -20,7 +23,12 @@ function readCart(){ return JSON.parse(localStorage.getItem(cartKey) || '[]'); }
 function prefillAccountName(){try{const session=JSON.parse(localStorage.getItem('pizzarium-auth-session')),name=session?.user?.user_metadata?.full_name;if(name)document.querySelector('input[name="name"]').value=name;}catch{}}
 function priceNumber(value){ const match = value.match(/(\d+)$/); return match ? Number(match[1]) : 0; }
 async function saveOrder(order, accessToken) { const response = await fetch(`${SUPABASE_URL}/rest/v1/orders`, { method: 'POST', headers: { apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', Prefer: 'return=representation' }, body: JSON.stringify(order) }); if (!response.ok) throw new Error(await response.text()); return response.json(); }
-function renderCart(){ const cart = readCart(); itemsEl.innerHTML = cart.map((item,index) => `<article class="cart-item"><div><h3>${item.name}</h3><p>${item.price}</p></div><div class="cart-side"><b>PKR ${priceNumber(item.price)*item.qty}</b><div class="qty-controls"><button data-action="minus" data-index="${index}">−</button><span>${item.qty}</span><button data-action="plus" data-index="${index}">+</button></div></div></article>`).join(''); emptyEl.classList.toggle('hidden',cart.length > 0); const total = cart.reduce((sum,item) => sum + priceNumber(item.price)*item.qty,0); subtotalEl.textContent = `PKR ${total.toLocaleString()}`; }
+function renderCart(){ const cart = readCart(); itemsEl.innerHTML = cart.map((item,index) => `<article class="cart-item"><div><h3>${item.name}</h3><p>${item.price}</p></div><div class="cart-side"><b>PKR ${priceNumber(item.price)*item.qty}</b><div class="qty-controls"><button data-action="minus" data-index="${index}">−</button><span>${item.qty}</span><button data-action="plus" data-index="${index}">+</button></div></div></article>`).join(''); emptyEl.classList.toggle('hidden',cart.length > 0); const subtotal = cart.reduce((sum,item) => sum + priceNumber(item.price)*item.qty,0);
+const finalTotal = subtotal + DELIVERY_CHARGE;
+
+subtotalEl.textContent = `PKR ${subtotal.toLocaleString()}`;
+deliveryChargesEl.textContent = `PKR ${DELIVERY_CHARGE.toLocaleString()}`;
+finalTotalEl.textContent = `PKR ${finalTotal.toLocaleString()}`; }
 itemsEl.addEventListener('click',event=>{ const button=event.target.closest('button'); if(!button)return; const cart=readCart(), index=Number(button.dataset.index); cart[index].qty += button.dataset.action==='plus' ? 1 : -1; if(cart[index].qty<1)cart.splice(index,1); localStorage.setItem(cartKey,JSON.stringify(cart)); renderCart(); });
 document.querySelector('#clearCart').addEventListener('click',()=>{localStorage.removeItem(cartKey);renderCart();});
 document.querySelectorAll('input[name="fulfilment"]').forEach(input=>input.addEventListener('change',()=>{document.querySelectorAll('.fulfilment-option').forEach(option=>option.classList.toggle('active',option.querySelector('input').checked)); const delivery=input.value==='Delivery'; addressField.classList.toggle('hidden',!delivery); locationPicker.classList.toggle('hidden',!delivery); addressField.querySelector('textarea').required=delivery; if(delivery && orderMap)setTimeout(()=>orderMap.invalidateSize(),100);}));
