@@ -1,36 +1,504 @@
 const cartKey = 'pizzarium-cart';
-// The publishable key is safe for browser code. Database access is protected by the SQL security rules.
+
+// The publishable key is safe for browser code.
+// Database access is protected by the SQL security rules.
 const SUPABASE_URL = 'https://avtiuwvvkyzglvkrqpyg.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_AemE6eA9-KykfslVujMv9A_lAqo3UKn';
+
+const DELIVERY_CHARGE = 150;
+
 const navigation = performance.getEntriesByType('navigation')[0];
-if (navigation && navigation.type === 'reload') localStorage.removeItem(cartKey);
+
+if (navigation && navigation.type === 'reload') {
+    localStorage.removeItem(cartKey);
+}
+
 const itemsEl = document.querySelector('#cartItems');
 const emptyEl = document.querySelector('#emptyCart');
 const subtotalEl = document.querySelector('#subtotal');
 const deliveryChargesEl = document.querySelector('#deliveryCharges');
 const finalTotalEl = document.querySelector('#finalTotal');
-const DELIVERY_CHARGE = 150;
 const addressField = document.querySelector('.address-field');
+
 const locationPicker = document.createElement('div');
 locationPicker.className = 'location-picker address-field';
-locationPicker.innerHTML = '<div class="location-label"><span>Select your pin on the map</span><button type="button" id="useLocation">Use my location</button></div><div id="orderMap" aria-label="Map to select your delivery location"></div><p id="locationStatus">Tap anywhere on the map to set your delivery pin.</p><input type="hidden" name="mapLocation" id="mapLocation">';
-addressField.insertAdjacentElement('afterend', locationPicker);
-let orderMap, locationMarker;
-function setLocation(lat, lng) { const link = `https://www.google.com/maps?q=${lat.toFixed(6)},${lng.toFixed(6)}`; document.querySelector('#mapLocation').value = link; document.querySelector('#locationStatus').innerHTML = `Delivery pin selected: <a href="${link}" target="_blank" rel="noreferrer">${lat.toFixed(5)}, ${lng.toFixed(5)} ↗</a>`; if (locationMarker) locationMarker.setLatLng([lat, lng]); else locationMarker = L.marker([lat, lng]).addTo(orderMap); }
-function initialiseMap() { orderMap = L.map('orderMap').setView([31.7131, 73.9850], 13); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(orderMap); orderMap.on('click', event => setLocation(event.latlng.lat, event.latlng.lng)); document.querySelector('#useLocation').addEventListener('click', () => { if (!navigator.geolocation) return; navigator.geolocation.getCurrentPosition(position => { const { latitude, longitude } = position.coords; orderMap.setView([latitude, longitude], 16); setLocation(latitude, longitude); }, () => { document.querySelector('#locationStatus').textContent = 'Location access was unavailable. Please tap your location on the map.'; }); }); }
-function loadMap() { const pickerCss = document.createElement('link'); pickerCss.rel = 'stylesheet'; pickerCss.href = 'location-map.css'; document.head.append(pickerCss); const css = document.createElement('link'); css.rel = 'stylesheet'; css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; document.head.append(css); const script = document.createElement('script'); script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'; script.onload = initialiseMap; document.head.append(script); }
-function readCart(){ return JSON.parse(localStorage.getItem(cartKey) || '[]'); }
-function prefillAccountName(){try{const session=JSON.parse(localStorage.getItem('pizzarium-auth-session')),name=session?.user?.user_metadata?.full_name;if(name)document.querySelector('input[name="name"]').value=name;}catch{}}
-function priceNumber(value){ const match = value.match(/(\d+)$/); return match ? Number(match[1]) : 0; }
-async function saveOrder(order, accessToken) { const response = await fetch(`${SUPABASE_URL}/rest/v1/orders`, { method: 'POST', headers: { apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', Prefer: 'return=representation' }, body: JSON.stringify(order) }); if (!response.ok) throw new Error(await response.text()); return response.json(); }
-function renderCart(){ const cart = readCart(); itemsEl.innerHTML = cart.map((item,index) => `<article class="cart-item"><div><h3>${item.name}</h3><p>${item.price}</p></div><div class="cart-side"><b>PKR ${priceNumber(item.price)*item.qty}</b><div class="qty-controls"><button data-action="minus" data-index="${index}">−</button><span>${item.qty}</span><button data-action="plus" data-index="${index}">+</button></div></div></article>`).join(''); emptyEl.classList.toggle('hidden',cart.length > 0); const subtotal = cart.reduce((sum,item) => sum + priceNumber(item.price)*item.qty,0);
-const finalTotal = subtotal + DELIVERY_CHARGE;
 
-subtotalEl.textContent = `PKR ${subtotal.toLocaleString()}`;
-deliveryChargesEl.textContent = `PKR ${DELIVERY_CHARGE.toLocaleString()}`;
-finalTotalEl.textContent = `PKR ${finalTotal.toLocaleString()}`; }
-itemsEl.addEventListener('click',event=>{ const button=event.target.closest('button'); if(!button)return; const cart=readCart(), index=Number(button.dataset.index); cart[index].qty += button.dataset.action==='plus' ? 1 : -1; if(cart[index].qty<1)cart.splice(index,1); localStorage.setItem(cartKey,JSON.stringify(cart)); renderCart(); });
-document.querySelector('#clearCart').addEventListener('click',()=>{localStorage.removeItem(cartKey);renderCart();});
-document.querySelectorAll('input[name="fulfilment"]').forEach(input=>input.addEventListener('change',()=>{document.querySelectorAll('.fulfilment-option').forEach(option=>option.classList.toggle('active',option.querySelector('input').checked)); const delivery=input.value==='Delivery'; addressField.classList.toggle('hidden',!delivery); locationPicker.classList.toggle('hidden',!delivery); addressField.querySelector('textarea').required=delivery; if(delivery && orderMap)setTimeout(()=>orderMap.invalidateSize(),100);}));
-document.querySelector('#orderForm').addEventListener('submit',async event=>{event.preventDefault();const cart=readCart();if(!cart.length){alert('Please add an item to your cart first.');return;}let session;try{session=JSON.parse(localStorage.getItem('pizzarium-auth-session'));}catch{}if(!session?.access_token||!session?.user?.id){alert('Please sign in or create an account before placing an order.');location.href='sign-in.html?next=cart.html';return;}const button=event.currentTarget.querySelector('[type="submit"]'),originalButton=button.innerHTML;button.disabled=true;button.textContent='Placing your order...';const data=new FormData(event.target),type=document.querySelector('input[name="fulfilment"]:checked').value;const total=cart.reduce((sum,item)=>sum+priceNumber(item.price)*item.qty,0),location=data.get('mapLocation')||'';const order={customer_id:session.user.id,fulfillment_type:type.toLowerCase(),customer_name:data.get('name'),customer_phone:data.get('phone'),delivery_address:type==='Delivery'?data.get('address'):null,location_url:type==='Delivery'?location:null,notes:data.get('notes')||null,total,items:cart.map(item=>({name:item.name,size:item.price,quantity:item.qty,line_total:priceNumber(item.price)*item.qty}))};try{const saved=await saveOrder(order,session.access_token);localStorage.removeItem(cartKey);renderCart();alert(`Your order${saved?.[0]?.order_number?` #${saved[0].order_number}`:''} has been placed successfully.`);location.href='index.html';}catch(error){console.error('Supabase order save failed:',error);alert('We could not place your order. Please try again.');}finally{button.disabled=false;button.innerHTML=originalButton;}});
-document.querySelector('#orderForm [type="submit"]').innerHTML='Place order <span>↗</span>';prefillAccountName();renderCart();loadMap();
+locationPicker.innerHTML = `
+    <div class="location-label">
+        <span>Select your pin on the map</span>
+        <button type="button" id="useLocation">Use my location</button>
+    </div>
+    <div id="orderMap" aria-label="Map to select your delivery location"></div>
+    <p id="locationStatus">
+        Tap anywhere on the map to set your delivery pin.
+    </p>
+    <input type="hidden" name="mapLocation" id="mapLocation">
+`;
+
+addressField.insertAdjacentElement('afterend', locationPicker);
+
+let orderMap, locationMarker;
+
+function setLocation(lat, lng) {
+    const link = `https://www.google.com/maps?q=${lat.toFixed(6)},${lng.toFixed(6)}`;
+
+    document.querySelector('#mapLocation').value = link;
+
+    document.querySelector('#locationStatus').innerHTML =
+        `Delivery pin selected: <a href="${link}" target="_blank" rel="noreferrer">${lat.toFixed(5)}, ${lng.toFixed(5)} ↗</a>`;
+
+    if (locationMarker) {
+        locationMarker.setLatLng([lat, lng]);
+    } else {
+        locationMarker = L.marker([lat, lng]).addTo(orderMap);
+    }
+}
+
+function initialiseMap() {
+    orderMap = L.map('orderMap').setView([31.7131, 73.9850], 13);
+
+    L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        }
+    ).addTo(orderMap);
+
+    orderMap.on('click', event => {
+        setLocation(event.latlng.lat, event.latlng.lng);
+    });
+
+    document.querySelector('#useLocation').addEventListener('click', () => {
+        if (!navigator.geolocation) return;
+
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                const {
+                    latitude,
+                    longitude
+                } = position.coords;
+
+                orderMap.setView(
+                    [latitude, longitude],
+                    16
+                );
+
+                setLocation(latitude, longitude);
+            },
+            () => {
+                document.querySelector('#locationStatus').textContent =
+                    'Location access was unavailable. Please tap your location on the map.';
+            }
+        );
+    });
+}
+
+function loadMap() {
+    const pickerCss = document.createElement('link');
+
+    pickerCss.rel = 'stylesheet';
+    pickerCss.href = 'location-map.css';
+
+    document.head.append(pickerCss);
+
+    const css = document.createElement('link');
+
+    css.rel = 'stylesheet';
+    css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+
+    document.head.append(css);
+
+    const script = document.createElement('script');
+
+    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    script.onload = initialiseMap;
+
+    document.head.append(script);
+}
+
+function readCart() {
+    return JSON.parse(
+        localStorage.getItem(cartKey) || '[]'
+    );
+}
+
+function prefillAccountName() {
+    try {
+        const session = JSON.parse(
+            localStorage.getItem('pizzarium-auth-session')
+        );
+
+        const name =
+            session?.user?.user_metadata?.full_name;
+
+        if (name) {
+            document.querySelector('input[name="name"]').value = name;
+        }
+    } catch {}
+}
+
+function priceNumber(value) {
+    const match = value.match(/(\d+)$/);
+
+    return match ? Number(match[1]) : 0;
+}
+
+async function saveOrder(order, accessToken) {
+    const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/orders`,
+        {
+            method: 'POST',
+            headers: {
+                apikey: SUPABASE_PUBLISHABLE_KEY,
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+                Prefer: 'return=representation'
+            },
+            body: JSON.stringify(order)
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(await response.text());
+    }
+
+    return response.json();
+}
+
+function renderCart() {
+    const cart = readCart();
+
+    itemsEl.innerHTML = cart
+        .map(
+            (item, index) => `
+                <article class="cart-item">
+                    <div>
+                        <h3>${item.name}</h3>
+                        <p>${item.price}</p>
+                    </div>
+
+                    <div class="cart-side">
+                        <b>
+                            PKR ${(
+                                priceNumber(item.price) * item.qty
+                            ).toLocaleString()}
+                        </b>
+
+                        <div class="qty-controls">
+                            <button
+                                data-action="minus"
+                                data-index="${index}"
+                            >
+                                −
+                            </button>
+
+                            <span>${item.qty}</span>
+
+                            <button
+                                data-action="plus"
+                                data-index="${index}"
+                            >
+                                +
+                            </button>
+                        </div>
+                    </div>
+                </article>
+            `
+        )
+        .join('');
+
+    emptyEl.classList.toggle(
+        'hidden',
+        cart.length > 0
+    );
+
+    // Calculate subtotal
+    const subtotal = cart.reduce(
+        (sum, item) =>
+            sum + priceNumber(item.price) * item.qty,
+        0
+    );
+
+    // Check whether Delivery or Pickup is selected
+    const selectedFulfilment =
+        document.querySelector(
+            'input[name="fulfilment"]:checked'
+        )?.value || 'Delivery';
+
+    // Rs.150 only for Delivery
+    const deliveryCharge =
+        selectedFulfilment === 'Delivery'
+            ? DELIVERY_CHARGE
+            : 0;
+
+    // Final total
+    const finalTotal =
+        subtotal + deliveryCharge;
+
+    // Update display
+    subtotalEl.textContent =
+        `PKR ${subtotal.toLocaleString()}`;
+
+    deliveryChargesEl.textContent =
+        `PKR ${deliveryCharge.toLocaleString()}`;
+
+    finalTotalEl.textContent =
+        `PKR ${finalTotal.toLocaleString()}`;
+}
+
+itemsEl.addEventListener('click', event => {
+    const button = event.target.closest('button');
+
+    if (!button) return;
+
+    const cart = readCart();
+    const index = Number(button.dataset.index);
+
+    cart[index].qty +=
+        button.dataset.action === 'plus'
+            ? 1
+            : -1;
+
+    if (cart[index].qty < 1) {
+        cart.splice(index, 1);
+    }
+
+    localStorage.setItem(
+        cartKey,
+        JSON.stringify(cart)
+    );
+
+    renderCart();
+});
+
+document
+    .querySelector('#clearCart')
+    .addEventListener('click', () => {
+        localStorage.removeItem(cartKey);
+        renderCart();
+    });
+
+document
+    .querySelectorAll('input[name="fulfilment"]')
+    .forEach(input => {
+        input.addEventListener('change', () => {
+
+            document
+                .querySelectorAll('.fulfilment-option')
+                .forEach(option => {
+                    option.classList.toggle(
+                        'active',
+                        option.querySelector(
+                            'input'
+                        ).checked
+                    );
+                });
+
+            const delivery =
+                input.value === 'Delivery';
+
+            addressField.classList.toggle(
+                'hidden',
+                !delivery
+            );
+
+            locationPicker.classList.toggle(
+                'hidden',
+                !delivery
+            );
+
+            addressField
+                .querySelector('textarea')
+                .required = delivery;
+
+            // Update totals immediately
+            renderCart();
+
+            if (delivery && orderMap) {
+                setTimeout(() => {
+                    orderMap.invalidateSize();
+                }, 100);
+            }
+        });
+    });
+
+document
+    .querySelector('#orderForm')
+    .addEventListener(
+        'submit',
+        async event => {
+
+            event.preventDefault();
+
+            const cart = readCart();
+
+            if (!cart.length) {
+                alert(
+                    'Please add an item to your cart first.'
+                );
+                return;
+            }
+
+            let session;
+
+            try {
+                session = JSON.parse(
+                    localStorage.getItem(
+                        'pizzarium-auth-session'
+                    )
+                );
+            } catch {}
+
+            if (
+                !session?.access_token ||
+                !session?.user?.id
+            ) {
+                alert(
+                    'Please sign in or create an account before placing an order.'
+                );
+
+                location.href =
+                    'sign-in.html?next=cart.html';
+
+                return;
+            }
+
+            const button =
+                event.currentTarget.querySelector(
+                    '[type="submit"]'
+                );
+
+            const originalButton =
+                button.innerHTML;
+
+            button.disabled = true;
+            button.textContent =
+                'Placing your order...';
+
+            const data =
+                new FormData(event.target);
+
+            const type =
+                document.querySelector(
+                    'input[name="fulfilment"]:checked'
+                ).value;
+
+            // Calculate subtotal
+            const subtotal = cart.reduce(
+                (sum, item) =>
+                    sum +
+                    priceNumber(item.price) *
+                    item.qty,
+                0
+            );
+
+            // Delivery = Rs.150
+            // Pickup = Rs.0
+            const deliveryCharge =
+                type === 'Delivery'
+                    ? DELIVERY_CHARGE
+                    : 0;
+
+            // Final amount saved to Supabase
+            const total =
+                subtotal + deliveryCharge;
+
+            const location =
+                data.get('mapLocation') || '';
+
+            const order = {
+                customer_id:
+                    session.user.id,
+
+                fulfillment_type:
+                    type.toLowerCase(),
+
+                customer_name:
+                    data.get('name'),
+
+                customer_phone:
+                    data.get('phone'),
+
+                delivery_address:
+                    type === 'Delivery'
+                        ? data.get('address')
+                        : null,
+
+                location_url:
+                    type === 'Delivery'
+                        ? location
+                        : null,
+
+                notes:
+                    data.get('notes') || null,
+
+                // This is the FINAL TOTAL
+                total: total,
+
+                items: cart.map(item => ({
+                    name: item.name,
+                    size: item.price,
+                    quantity: item.qty,
+                    line_total:
+                        priceNumber(item.price) *
+                        item.qty
+                }))
+            };
+
+            try {
+                const saved =
+                    await saveOrder(
+                        order,
+                        session.access_token
+                    );
+
+                localStorage.removeItem(
+                    cartKey
+                );
+
+                renderCart();
+
+                alert(
+                    `Your order${
+                        saved?.[0]?.order_number
+                            ? ` #${saved[0].order_number}`
+                            : ''
+                    } has been placed successfully.`
+                );
+
+                location.href =
+                    'index.html';
+
+            } catch (error) {
+
+                console.error(
+                    'Supabase order save failed:',
+                    error
+                );
+
+                alert(
+                    'We could not place your order. Please try again.'
+                );
+
+            } finally {
+
+                button.disabled = false;
+                button.innerHTML =
+                    originalButton;
+            }
+        }
+    );
+
+document
+    .querySelector(
+        '#orderForm [type="submit"]'
+    )
+    .innerHTML =
+        'Place order <span>↗</span>';
+
+prefillAccountName();
+
+renderCart();
+
+loadMap();
