@@ -1,0 +1,238 @@
+@media (max-width:800px) {
+    .header {
+        position: sticky;
+        top: 0;
+        z-index: 30
+    }
+
+    .header .brand {
+        font-size: 1.38rem
+    }
+
+    .order-link {
+        display: block;
+        font-size: .78rem
+    }
+
+    .cart-count {
+        display: inline-grid;
+        place-items: center;
+        min-width: 19px;
+        height: 19px;
+        border-radius: 50%;
+        background: var(--red);
+        color: white;
+        font-size: .64rem
+    }
+
+    .hero {
+        padding-top: 4rem
+    }
+
+    .hero-copy {
+        padding-top: 1.5rem
+    }
+
+    .hero-actions {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 1.1rem
+    }
+
+    .pizza-stage {
+        margin-top: .6rem
+    }
+
+    .stamp-top {
+        right: 1%
+    }
+
+    .stamp-bottom {
+        left: 1%
+    }
+
+    .section-heading h2,
+    .story h2,
+    .specials h2,
+    .visit h2 {
+        font-size: 2.85rem
+    }
+
+    .menu-tabs {
+        gap: .35rem;
+        padding-bottom: .4rem
+    }
+
+    .menu-tabs button {
+        padding: .75rem .85rem;
+        font-size: .76rem
+    }
+
+    .menu-card {
+        min-height: 170px;
+        padding: 1rem
+    }
+
+    .menu-card h3 {
+        font-size: 1.65rem
+    }
+
+    .menu-card:after {
+        display: none
+    }
+
+    .story-copy {
+        padding: 3.8rem 8vw
+    }
+
+    .contact-links {
+        flex-direction: column;
+        gap: .65rem
+    }
+
+    .visit-actions {
+        align-items: flex-start;
+        flex-direction: column
+    }
+
+    .button {
+        min-height: 48px
+    }
+
+    .modal-content {
+        max-height: calc(100dvh - 2rem);
+        overflow-y: auto;
+        padding: 3rem 1.35rem 1.6rem
+    }
+
+    .modal-content h2 {
+        font-size: 2.65rem
+    }
+
+    .modal-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: .65rem
+    }
+
+    .modal-actions label {
+        display: grid;
+        gap: .35rem;
+        font-size: .66rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        text-align: left
+    }
+
+    .modal-actions select {
+        min-width: 0;
+        width: 100%;
+        border: 1px solid #f05a3d;
+        background: #fff7eb;
+        color: #181416;
+        padding: .75rem .45rem;
+        font: 600 .82rem 'DM Sans'
+    }
+
+    .modal-actions .modal-order {
+        grid-column: 1/-1;
+        justify-content: center
+    }
+}
+
+@media (max-width:480px) {
+    .header {
+        padding: 0 5vw
+    }
+
+    .header .brand small {
+        font-size: .42rem
+    }
+
+    .menu-toggle {
+        font-size: 1.2rem
+    }
+
+    .hero h1 {
+        font-size: 2.75rem
+    }
+
+    .pizza-stage {
+        height: 355px
+    }
+
+    .pizza {
+        width: 235px;
+        height: 235px;
+        border-width: 10px
+    }
+
+    .orbit {
+        width: 300px;
+        height: 230px
+    }
+
+    .orbit-two {
+        width: 245px;
+        height: 310px
+    }
+
+    .stamp {
+        font-size: .85rem;
+        padding: 10px
+    }
+
+    .menu-grid {
+        gap: .7rem
+    }
+
+    .price {
+        font-size: .85rem
+    }
+
+    .story-art {
+        min-height: 285px
+    }
+
+    .story-pizza {
+        font-size: 10.5rem
+    }
+
+    .story-note {
+        bottom: 8%;
+        right: 7%
+    }
+
+    .visit-content {
+        padding: 55px 7vw
+    }
+
+    .visit-art {
+        min-height: 245px
+    }
+
+    .visit-art p {
+        font-size: 2.7rem
+    }
+
+    .checkout-title {
+        margin-bottom: 2.4rem
+    }
+
+    .checkout-title h1 {
+        font-size: 3.1rem
+    }
+
+    .cart-item {
+        gap: .5rem
+    }
+
+    .cart-item h3 {
+        font-size: 1.1rem
+    }
+
+    .cart-side b {
+        font-size: .88rem
+    }
+}

@@ -1,0 +1,65 @@
+.location-picker {
+    margin-top: .15rem
+}
+
+.location-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .8rem;
+    margin-bottom: .55rem
+}
+
+.location-label span {
+    font: 800 .68rem Manrope, 'DM Sans', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: .09em
+}
+
+.location-label button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #d7b767;
+    font: 800 .65rem Manrope, 'DM Sans', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    cursor: pointer
+}
+
+.location-label button:hover {
+    text-decoration: underline
+}
+
+#orderMap {
+    height: 230px;
+    width: 100%;
+    border: 1px solid #d7b76788;
+    z-index: 1
+}
+
+#locationStatus {
+    margin: .55rem 0 0;
+    color: #c8bdab;
+    font-size: .72rem;
+    line-height: 1.45;
+    text-transform: none;
+    letter-spacing: 0
+}
+
+#locationStatus a {
+    color: #e0c27d;
+    text-decoration: underline
+}
+
+@media(max-width:480px) {
+    #orderMap {
+        height: 190px
+    }
+
+    .location-label {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: .3rem
+    }
+}

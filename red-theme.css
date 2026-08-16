@@ -1,0 +1,164 @@
+/* Pizzarium signature palette: tomato red, charcoal, and warm cream */
+:root {
+    --cream: #fff7eb;
+    --ink: #181416;
+    --red: #c51f2b;
+    --yellow: #f05a3d;
+    --green: #7f332b;
+}
+
+body {
+    background: #fff7eb;
+}
+
+.header {
+    background: rgba(255, 247, 235, .82);
+}
+
+.brand-dot,
+.eyebrow i {
+    color: #c51f2b;
+    background: #c51f2b;
+}
+
+.hero {
+    background: radial-gradient(circle at 58% 45%, #f6c6ac 0 9%, transparent 37%), linear-gradient(115deg, #fff7eb 15%, #f7e6d8 100%);
+}
+
+.button-red,
+.modal-order {
+    background: #c51f2b;
+    color: #fff7eb;
+}
+
+.button:hover {
+    box-shadow: 5px 6px 0 #f05a3d;
+}
+
+.ticker {
+    background: #261719;
+    color: #fff0da;
+}
+
+.ticker b {
+    color: #f05a3d;
+}
+
+.menu-card {
+    background: #fffaf4;
+    border-color: #c51f2b55;
+}
+
+.menu-card:hover {
+    background: #fce3d7;
+}
+
+.menu-card:after,
+.card-number {
+    color: #c51f2b;
+}
+
+.price {
+    background: #261719;
+}
+
+.price small {
+    color: #ffad8b;
+}
+
+.story {
+    background: #9e1925;
+}
+
+.story-note,
+.specials {
+    background: #f05a3d;
+}
+
+.story-copy p:not(.eyebrow) {
+    color: #ffe0d2;
+}
+
+.topping-list>div {
+    border-color: #8f302c88;
+}
+
+.visit {
+    background: #261719;
+}
+
+.visit .eyebrow,
+.visit-art p {
+    color: #ff9a73;
+}
+
+.visit-art {
+    background: repeating-linear-gradient(45deg, #321d20 0 22px, #261719 22px 44px);
+}
+
+.map-pin {
+    color: #c51f2b;
+}
+
+.contact-links a {
+    border-color: #ff9a73;
+}
+
+.review-link {
+    color: #ff9a73;
+    border-color: #ff9a73;
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #321b1e, #1c1415);
+    border-color: #f05a3d;
+}
+
+.modal-content:before {
+    border-color: #f05a3d55;
+}
+
+.modal-close,
+.modal-content .eyebrow,
+.modal-mark {
+    color: #ff9a73;
+}
+
+.modal-prices span {
+    border-color: #f05a3d;
+    color: #ffb394;
+}
+
+.cart-panel,
+.checkout-panel {
+    border-color: #c51f2b66;
+}
+
+.checkout {
+    background: linear-gradient(115deg, #fff7eb, #f7e0d2);
+}
+
+.panel-heading {
+    border-color: #c51f2b66;
+}
+
+.fulfilment-option {
+    border-color: #c51f2b88;
+}
+
+.fulfilment-option.active {
+    background: #261719;
+}
+
+.qty-controls button {
+    border-color: #c51f2b;
+}
+
+input,
+textarea {
+    outline-color: #c51f2b;
+}
+
+.cart-header {
+    background: #fff7eb;
+}
